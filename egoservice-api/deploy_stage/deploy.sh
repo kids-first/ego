@@ -10,11 +10,11 @@ if [ $1 = "dev" ]; then
    validate -var 'image=538745987955.dkr.ecr.us-east-1.amazonaws.com/kf-api-egoserverservice:latest' \
    -var 'task_role_arn="arn:aws:iam::538745987955:role/kfEgoserviceApiRole-dev"' -var 'application=egoserverservice-api' \
    -var 'service_name="kf-api-egoserverservice"' -var 'owner="jenkins"' -var-file=dev.tfvar \
-   -var 'vault_role="kf_egoserverservice_api_role"'
+   -var 'vault_role="kf_egoserverservice_api_role"' -var 'pg_host="ego-dev-db.c3siovbugjym.us-east-1.rds.amazonaws.com"'
   terraform apply --auto-approve -var 'image=538745987955.dkr.ecr.us-east-1.amazonaws.com/kf-api-egoserverservice:latest' \
    -var 'task_role_arn="arn:aws:iam::538745987955:role/kfEgoserviceApiRole-dev"' -var 'application=egoserverservice-api' \
    -var 'service_name="kf-api-egoserverservice"' -var 'owner="jenkins"' -var-file=dev.tfvar \
-   -var 'vault_role="kf_egoserverservice_api_role"'
+   -var 'vault_role="kf_egoserverservice_api_role"' -var 'pg_host="ego-dev-db.c3siovbugjym.us-east-1.rds.amazonaws.com"'
 fi
 
 if [ $1 = "qa" ]; then
