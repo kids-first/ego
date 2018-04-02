@@ -27,9 +27,6 @@ variable "pg_host" {}
 variable "db_secret_path" {
   default=""
 }
-variable "pg_db_name" {
-  default = "ego"
-}
 variable "vault_role" {}
 variable "ego_active_profiles" {
   default="auth"
