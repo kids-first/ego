@@ -31,3 +31,9 @@ variable "pg_db_name" {
   default = "ego"
 }
 variable "vault_role" {}
+variable "ego_active_profiles" {
+  default="auth"
+}
+variable "ego_server_port" {
+  default=8081
+}
