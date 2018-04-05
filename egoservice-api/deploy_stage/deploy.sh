@@ -17,7 +17,7 @@ if [ $1 = "dev" ]; then
    -var 'task_role_arn="arn:aws:iam::538745987955:role/kfEgoserviceApiRole-dev"' -var 'application=egoserverservice-api' \
    -var 'service_name="kf-api-egoserverservice"' -var 'owner="jenkins"' -var-file=dev.tfvar \
    -var 'vault_role="kf_egoserverservice_api_role"' -var 'pg_host="ego-dev-db.c3siovbugjym.us-east-1.rds.amazonaws.com"' \
-   -var 'ego_active_profiles="auth"' -var 'ego_server_port=8081' -var 'ego_db="ego"' -var 'ego_iam_role="kf_egoservice_api_role"' \ 
+   -var 'ego_active_profiles="auth"' -var 'ego_server_port=8081' -var 'ego_db="ego"' -var 'ego_iam_role="kf_egoservice_api_role"' \
    -var 'ego_vault_host="vault-dev.kids-first.io"' -var 'ego_vault_scheme="https"'
 fi
 
