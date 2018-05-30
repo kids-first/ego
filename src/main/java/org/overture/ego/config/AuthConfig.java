@@ -20,12 +20,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.overture.ego.security.CorsFilter;
 import org.overture.ego.token.CustomTokenEnhancer;
 import org.overture.ego.service.ApplicationService;
-import org.overture.ego.token.TokenSigner;
+import org.overture.ego.token.signer.TokenSigner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
@@ -76,6 +78,11 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
   }
 
   @Bean
+  public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+  }
+
+  @Bean
   public JwtAccessTokenConverter accessTokenConverter() {
     JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
     if(tokenSigner.getKeyPair().isPresent()) {
@@ -93,12 +100,10 @@ public class AuthConfig extends AuthorizationServerConfigurerAdapter {
     return defaultTokenServices;
   }
 
-
   @Override
   public void configure(ClientDetailsServiceConfigurer clients)
           throws Exception {
     clients.withClientDetails(clientDetailsService);
-
   }
 
   @Bean

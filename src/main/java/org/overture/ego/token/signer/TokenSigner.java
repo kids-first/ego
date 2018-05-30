@@ -14,19 +14,15 @@
  * limitations under the License.
  */
 
-package org.overture.ego.token;
+package org.overture.ego.token.signer;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import java.security.Key;
+import java.security.KeyPair;
+import java.util.Optional;
 
-@Data
-@NoArgsConstructor
-@RequiredArgsConstructor
-@JsonInclude(JsonInclude.Include.ALWAYS)
-public class TokenContext {
+public interface TokenSigner {
 
-  @NonNull
-  @JsonProperty("user")
-  private TokenUserInfo userInfo;
+  Optional<Key> getKey();
+  Optional<KeyPair> getKeyPair();
+  Optional<String> getEncodedPublicKey();
 }

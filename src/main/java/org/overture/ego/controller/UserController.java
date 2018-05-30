@@ -16,6 +16,7 @@
 
 package org.overture.ego.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.overture.ego.model.dto.PageDTO;
@@ -28,14 +29,18 @@ import org.overture.ego.security.AdminScoped;
 import org.overture.ego.service.ApplicationService;
 import org.overture.ego.service.GroupService;
 import org.overture.ego.service.UserService;
+import org.overture.ego.view.Views;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.persistence.EntityNotFoundException;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Slf4j
@@ -72,13 +77,14 @@ public class UserController {
   })
   @ApiResponses(
       value = {
-          @ApiResponse(code = 200, message = "Page of users", response = PageDTO.class)
+          @ApiResponse(code = 200, message = "Page of Users", response = PageDTO.class)
       }
   )
+  @JsonView(Views.REST.class)
   public @ResponseBody
   PageDTO<User> getUsersList(
           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) final String accessToken,
-          @ApiParam(value="Query string compares to users Name, Email, First Name, and Last Name fields.", required=false ) @RequestParam(value = "query", required = false) String query,
+          @ApiParam(value="Query string compares to Users Name, Email, First Name, and Last Name fields.", required=false ) @RequestParam(value = "query", required = false) String query,
           @ApiIgnore @Filters List<SearchFilter> filters,
           Pageable pageable)
   {
@@ -110,6 +116,7 @@ public class UserController {
           @ApiResponse(code = 200, message = "User Details", response = User.class)
       }
   )
+  @JsonView(Views.REST.class)
   public @ResponseBody
   User getUser(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) final String accessToken,
@@ -162,9 +169,10 @@ public class UserController {
   })
   @ApiResponses(
           value = {
-                  @ApiResponse(code = 200, message = "Page of groups of user", response = PageDTO.class)
+                  @ApiResponse(code = 200, message = "Page of Groups of user", response = PageDTO.class)
           }
   )
+  @JsonView(Views.REST.class)
   public @ResponseBody
   PageDTO<Group> getUsersGroups(
           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) final String accessToken,
@@ -184,7 +192,7 @@ public class UserController {
   @RequestMapping(method = RequestMethod.POST, value = "/{id}/groups")
   @ApiResponses(
           value = {
-                  @ApiResponse(code = 200, message = "Add groups to user", response = String.class)
+                  @ApiResponse(code = 200, message = "Add Groups to user", response = String.class)
           }
   )
   public @ResponseBody
@@ -193,7 +201,7 @@ public class UserController {
           @PathVariable(value = "id", required = true) String userId,
           @RequestBody(required = true) List<String> groupIDs) {
     userService.addUsersToGroups(userId,groupIDs);
-    return "User added to : "+groupIDs.size() + " groups successfully.";
+    return "User added to : "+groupIDs.size() + " Group(s) successfully.";
   }
 
   @AdminScoped
@@ -236,6 +244,7 @@ public class UserController {
                   @ApiResponse(code = 200, message = "Page of apps of user", response = PageDTO.class)
           }
   )
+  @JsonView(Views.REST.class)
   public @ResponseBody
   PageDTO<Application> getUsersApplications(
           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) final String accessToken,
@@ -255,7 +264,7 @@ public class UserController {
   @RequestMapping(method = RequestMethod.POST, value = "/{id}/applications")
   @ApiResponses(
           value = {
-                  @ApiResponse(code = 200, message = "Add applications to user", response = String.class)
+                  @ApiResponse(code = 200, message = "Add Applications to user", response = String.class)
           }
   )
   public @ResponseBody
@@ -280,5 +289,12 @@ public class UserController {
           @PathVariable(value = "id", required = true) String userId,
           @PathVariable(value = "appIDs", required = true) List<String> appIDs) {
     userService.deleteUserFromApp(userId,appIDs);
+  }
+
+  @ExceptionHandler({ EntityNotFoundException.class })
+  public ResponseEntity<Object> handleEntityNotFoundException(HttpServletRequest req, EntityNotFoundException ex) {
+    log.error("User ID not found.");
+    return new ResponseEntity<Object>("Invalid User ID provided.", new HttpHeaders(),
+        HttpStatus.BAD_REQUEST);
   }
 }

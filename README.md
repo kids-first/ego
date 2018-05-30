@@ -12,18 +12,17 @@
 - [Introduction](#introduction)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
-- [Quick Start](#quickstart)
+- [Quick Start](#quick-start)
+- [Development Install](#development-install)
   - [Step 1 - Setup Database](#step-1---setup-database)
-  - [Step 1 - Run](#step-2---run)
+  - [Step 2 - Run](#step-2---run)
 - [Tech Specifications](#tech-specification)
 
 ## Introduction
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-Authorization Service built to provide Single Sign On for various microservices in an application. EGO works with 
-Identity Providers such as Google, Facebook to provide social logins in the application. EGO provides stateless
-authorization using [JWT (JSON Web Tokens)](https://jwt.io/) and can scale very well to a large number of users.
+Authorization Service built to provide Single Sign On for various microservices in an application. EGO works with Identity Providers such as Google, Facebook to provide social logins in the application. EGO provides stateless authorization using [JWT (JSON Web Tokens)](https://jwt.io/) and can scale very well to a large number of users.
 
 Interactive documentation of the API is provided using Swagger UI.
 
@@ -57,10 +56,20 @@ The application is written in JAVA using Spring Boot and Spring Security Framewo
 
 The goal of this quick start is to get a working application quickly up and running.
 
+Set the `API_HOST_PORT` where ego is to be run, then run docker compose:
+```
+API_HOST_PORT=8080 docker-compose up -d
+```
+
+Ego should now be deployed locally with the swagger ui at 
+`http://localhost:8080/swagger-ui.html`
+
+## Development Install
+
 ### Step 1 - Setup Database
-1. Install Postgres 
+1. Install Postgres
 2. Create a Database: ego with user postgres and empty password
-3. Execute [SQL Script](/src/main/resources/schemas/psql-schema.sql) to setup tables.
+3. Execute [SQL Script](/src/main/resources/schemas/01-psql-schema.sql) to setup tables.
 
 ### Step 2 - Run
 
@@ -120,4 +129,4 @@ An example ego JWT is mentioned below:
 
 #### Notes
 * "aud" field can contain one or more client IDs. This field indicates the client services that are authorized to use this JWT.
-* "groups" will differ based on the domain of client services - each domain of service should get list of groups from that domain's ego service
+* "groups" will differ based on the domain of client services - each domain of service should get list of groups from that domain's ego service.

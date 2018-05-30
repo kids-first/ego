@@ -17,13 +17,16 @@
 package org.overture.ego.model.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.Getter;
 import lombok.NonNull;
+import org.overture.ego.view.Views;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 @Getter
+@JsonView(Views.REST.class)
 public class PageDTO<T> {
 
   private final int limit;

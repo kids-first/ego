@@ -16,6 +16,7 @@
 
 package org.overture.ego.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiResponse;
@@ -31,14 +32,18 @@ import org.overture.ego.security.AdminScoped;
 import org.overture.ego.service.ApplicationService;
 import org.overture.ego.service.GroupService;
 import org.overture.ego.service.UserService;
+import org.overture.ego.view.Views;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.persistence.EntityNotFoundException;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Slf4j
@@ -72,9 +77,10 @@ public class ApplicationController {
   })
   @ApiResponses(
       value = {
-          @ApiResponse(code = 200, message = "Page of applications", response = PageDTO.class)
+          @ApiResponse(code = 200, message = "Page of Applications", response = PageDTO.class)
       }
   )
+  @JsonView(Views.REST.class)
   public @ResponseBody
   PageDTO<Application> getApplicationsList(
           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) final String accessToken,
@@ -109,6 +115,7 @@ public class ApplicationController {
           @ApiResponse(code = 200, message = "Application Details", response = Application.class)
       }
   )
+  @JsonView(Views.REST.class)
   public @ResponseBody
   Application get(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) final String accessToken,
@@ -161,9 +168,10 @@ public class ApplicationController {
   })
   @ApiResponses(
           value = {
-                  @ApiResponse(code = 200, message = "Page of users of group", response = PageDTO.class)
+                  @ApiResponse(code = 200, message = "Page of Users of group", response = PageDTO.class)
           }
   )
+  @JsonView(Views.REST.class)
   public @ResponseBody
   PageDTO<User> getApplicationUsers(
           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) final String accessToken,
@@ -201,9 +209,10 @@ public class ApplicationController {
   })
   @ApiResponses(
           value = {
-                  @ApiResponse(code = 200, message = "Page of applications of group", response = PageDTO.class)
+                  @ApiResponse(code = 200, message = "Page of Applications of group", response = PageDTO.class)
           }
   )
+  @JsonView(Views.REST.class)
   public @ResponseBody
   PageDTO<Group> getApplicationsGroups(
           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) final String accessToken,
@@ -217,6 +226,13 @@ public class ApplicationController {
     } else {
       return new PageDTO<>(groupService.findApplicationsGroup(appId, query, filters, pageable));
     }
+  }
+
+  @ExceptionHandler({ EntityNotFoundException.class })
+  public ResponseEntity<Object> handleEntityNotFoundException(HttpServletRequest req, EntityNotFoundException ex) {
+    log.error("Application ID not found.");
+    return new ResponseEntity<Object>("Invalid Application ID provided.", new HttpHeaders(),
+        HttpStatus.BAD_REQUEST);
   }
 
 }

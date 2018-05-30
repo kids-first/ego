@@ -16,55 +16,46 @@
 
 package org.overture.ego.token;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
 import lombok.*;
-import org.springframework.util.StringUtils;
+import org.overture.ego.view.Views;
 
 import java.util.List;
 import java.util.UUID;
 
-
 @Data
 @NoArgsConstructor
-public class TokenClaims {
+@JsonView(Views.JWTAccessToken.class)
+public abstract class TokenClaims {
+  @NonNull
+  protected Integer iat;
 
   @NonNull
-  private Integer iat;
-  @NonNull
-  private Integer exp;
+  protected Integer exp;
+
   @NonNull
   @JsonIgnore
-  private Integer validDuration;
+  protected Integer validDuration;
+
   @Getter
-  private String sub;
+  protected String sub;
+
   @NonNull
-  private String iss;
+  protected String iss;
+
   @Getter
-  private List<String> aud;
-  @NonNull
-  private TokenContext context;
+  protected List<String> aud;
 
   /*
     Defaults
    */
   private String jti = UUID.randomUUID().toString();
+
   @Getter(AccessLevel.NONE)
   @Setter(AccessLevel.NONE)
   @JsonIgnore
   private long initTime = System.currentTimeMillis();
-
-  public String getSub(){
-    if(StringUtils.isEmpty(sub)) {
-      return String.valueOf(this.context.getUserInfo().getId());
-    } else {
-      return sub;
-    }
-  }
-
-  public List<String> getAud(){
-    return this.context.getUserInfo().getApplicationNames();
-  }
 
   public int getExp(){
     return ((int) ((this.initTime + validDuration)/ 1000L));

@@ -16,6 +16,7 @@
 
 package org.overture.ego.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiResponse;
@@ -31,14 +32,18 @@ import org.overture.ego.security.AdminScoped;
 import org.overture.ego.service.ApplicationService;
 import org.overture.ego.service.GroupService;
 import org.overture.ego.service.UserService;
+import org.overture.ego.view.Views;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.persistence.EntityNotFoundException;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @Slf4j
@@ -76,9 +81,10 @@ public class GroupController {
   })
   @ApiResponses(
       value = {
-          @ApiResponse(code = 200, message = "Page of groups", response = PageDTO.class)
+          @ApiResponse(code = 200, message = "Page of Groups", response = PageDTO.class)
       }
   )
+  @JsonView(Views.REST.class)
   public @ResponseBody
   PageDTO<Group> getGroupsList(
           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) final String accessToken,
@@ -113,6 +119,7 @@ public class GroupController {
           @ApiResponse(code = 200, message = "Group Details", response = Group.class)
       }
   )
+  @JsonView(Views.REST.class)
   public @ResponseBody
   Group getGroup(
       @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) final String accessToken,
@@ -166,9 +173,10 @@ public class GroupController {
   })
   @ApiResponses(
           value = {
-                  @ApiResponse(code = 200, message = "Page of applications of group", response = PageDTO.class)
+                  @ApiResponse(code = 200, message = "Page of Applications of group", response = PageDTO.class)
           }
   )
+  @JsonView(Views.REST.class)
   public @ResponseBody
   PageDTO<Application> getGroupsApplications(
           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) final String accessToken,
@@ -238,9 +246,10 @@ public class GroupController {
   })
   @ApiResponses(
           value = {
-                  @ApiResponse(code = 200, message = "Page of users of group", response = PageDTO.class)
+                  @ApiResponse(code = 200, message = "Page of Users of group", response = PageDTO.class)
           }
   )
+  @JsonView(Views.REST.class)
   public @ResponseBody
   PageDTO<User> getGroupsUsers(
           @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) final String accessToken,
@@ -254,5 +263,12 @@ public class GroupController {
     } else {
       return new PageDTO<>(userService.findGroupsUsers(groupId, query, filters, pageable));
     }
+  }
+
+  @ExceptionHandler({ EntityNotFoundException.class })
+  public ResponseEntity<Object> handleEntityNotFoundException(HttpServletRequest req, EntityNotFoundException ex) {
+    log.error("Group ID not found.");
+    return new ResponseEntity<Object>("Invalid Group ID provided.", new HttpHeaders(),
+        HttpStatus.BAD_REQUEST);
   }
 }
