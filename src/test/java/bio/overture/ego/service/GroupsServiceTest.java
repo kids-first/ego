@@ -1,8 +1,5 @@
 package bio.overture.ego.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-
 import bio.overture.ego.controller.resolver.PageableResolver;
 import bio.overture.ego.model.entity.Group;
 import bio.overture.ego.model.enums.EntityStatus;
@@ -11,14 +8,11 @@ import bio.overture.ego.model.params.PolicyIdStringWithAccessLevel;
 import bio.overture.ego.model.search.SearchFilter;
 import bio.overture.ego.utils.EntityGenerator;
 import bio.overture.ego.utils.PolicyPermissionUtils;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import javax.persistence.EntityNotFoundException;
+import com.google.common.collect.ImmutableSet;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.assertj.core.api.Assertions;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,21 +24,53 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static bio.overture.ego.utils.Collectors.toImmutableSet;
+import static bio.overture.ego.utils.EntityGenerator.generateRandomUUIDNotIn;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+
 @Slf4j
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
 @Transactional
-public class GroupsServiceTest {
+public class GroupsServiceTest extends AbstractNamedServiceTest<Group, UUID, GroupService>{
+
+  private static final String GROUP1 = "Base GroupOne";
+  private static final String GROUP2 = "Base GroupTwo";
+  private static final String GROUP3 = "Base GroupThree";
+  private static final Set<String> GROUPS = ImmutableSet.of(GROUP1, GROUP2, GROUP3);
+
   @Autowired private ApplicationService applicationService;
-
   @Autowired private UserService userService;
-
   @Autowired private GroupService groupService;
-
   @Autowired private PolicyService policyService;
-
   @Autowired private EntityGenerator entityGenerator;
+
+  @Before
+  public void beforeTest(){
+    val existingUsers = GROUPS.stream().map(entityGenerator::setupGroup).collect(toImmutableSet());
+    val existingIds = existingUsers.stream().map(Group::getId).collect(toImmutableSet());
+    val existingNames = existingUsers.stream().map(Group::getName).collect(toImmutableSet());
+    val nonExistingId = generateRandomUUIDNotIn(existingIds);
+    val nonExistingName = EntityGenerator.generateRandomNameNotIn(existingNames);
+    val config = ServiceTestConfig.<Group,UUID, GroupService>builder()
+        .entityType(Group.class)
+        .existingEntities(existingUsers)
+        .existingNames(existingNames)
+        .nonExistingName(nonExistingName)
+        .nonExistingId(nonExistingId)
+        .service(groupService)
+        .build();
+    this.setConfig(config);
+  }
 
   // Create
   @Test

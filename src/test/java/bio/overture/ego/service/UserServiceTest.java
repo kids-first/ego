@@ -8,6 +8,7 @@ import bio.overture.ego.model.search.SearchFilter;
 import bio.overture.ego.token.IDToken;
 import bio.overture.ego.utils.EntityGenerator;
 import bio.overture.ego.utils.PolicyPermissionUtils;
+import com.google.common.collect.ImmutableSet;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.Before;
@@ -24,9 +25,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static bio.overture.ego.utils.Collectors.toImmutableSet;
+import static bio.overture.ego.utils.EntityGenerator.generateRandomUUIDNotIn;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,6 +43,11 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 @Transactional
 public class UserServiceTest extends AbstractNamedServiceTest<User, UUID, UserService>{
 
+  private static final String USER1 = "User One";
+  private static final String USER2 = "User Two";
+  private static final String USER3 = "User Three";
+  private static final Set<String> USERS = ImmutableSet.of(USER1, USER2, USER3);
+
   private static final String NON_EXISTENT_USER = "827fae28-7fb8-11e8-adc0-fa7ae01bbebc";
 
   @Autowired private ApplicationService applicationService;
@@ -49,7 +58,20 @@ public class UserServiceTest extends AbstractNamedServiceTest<User, UUID, UserSe
 
   @Before
   public void beforeTest(){
-    this.setService(userService);
+    val existingUsers = USERS.stream().map(entityGenerator::setupUser).collect(toImmutableSet());
+    val existingIds = existingUsers.stream().map(User::getId).collect(toImmutableSet());
+    val existingNames = existingUsers.stream().map(User::getName).collect(toImmutableSet());
+    val nonExistingId = generateRandomUUIDNotIn(existingIds);
+    val nonExistingName = EntityGenerator.generateRandomNameNotIn(existingNames);
+    val config = ServiceTestConfig.<User,UUID, UserService>builder()
+        .entityType(User.class)
+        .existingEntities(existingUsers)
+        .existingNames(existingNames)
+        .nonExistingName(nonExistingName)
+        .nonExistingId(nonExistingId)
+        .service(userService)
+        .build();
+    this.setConfig(config);
   }
 
   // Create

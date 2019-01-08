@@ -1,17 +1,12 @@
 package bio.overture.ego.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-
 import bio.overture.ego.controller.resolver.PageableResolver;
 import bio.overture.ego.model.entity.Group;
+import bio.overture.ego.model.entity.Policy;
 import bio.overture.ego.model.exceptions.NotFoundException;
 import bio.overture.ego.model.search.SearchFilter;
 import bio.overture.ego.utils.EntityGenerator;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import com.google.common.collect.ImmutableSet;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.Before;
@@ -24,22 +19,53 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import static bio.overture.ego.utils.Collectors.toImmutableSet;
+import static bio.overture.ego.utils.EntityGenerator.generateRandomUUIDNotIn;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+
 @Slf4j
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
 @Transactional
-public class PolicyServiceTest {
+public class PolicyServiceTest extends AbstractNamedServiceTest<Policy, UUID, PolicyService> {
+
+  private static final String POLICY1 = "Base,PolicyOne";
+  private static final String POLICY2 = "Base,PolicyTwo";
+  private static final String POLICY3 = "Base,PolicyThree";
+  private static final Set<String> POLICIES = ImmutableSet.of(POLICY1, POLICY2, POLICY3);
 
   @Autowired private PolicyService policyService;
-
   @Autowired private EntityGenerator entityGenerator;
+
 
   private List<Group> groups;
 
   @Before
   public void setUp() {
     groups = entityGenerator.setupGroups("Group One", "GroupTwo", "Group Three");
+    val firstGroup = groups.get(0);
+    val existingPolicies = POLICIES.stream().map(x -> entityGenerator.setupPolicy(x, firstGroup.getName())).collect(toImmutableSet());
+    val existingIds = existingPolicies.stream().map(Policy::getId).collect(toImmutableSet());
+    val existingNames = existingPolicies.stream().map(Policy::getName).collect(toImmutableSet());
+    val nonExistingId = generateRandomUUIDNotIn(existingIds);
+    val nonExistingName = EntityGenerator.generateRandomNameNotIn(existingNames);
+    val config = ServiceTestConfig.<Policy,UUID, PolicyService>builder()
+        .entityType(Policy.class)
+        .existingEntities(existingPolicies)
+        .existingNames(existingNames)
+        .nonExistingName(nonExistingName)
+        .nonExistingId(nonExistingId)
+        .service(policyService)
+        .build();
+    this.setConfig(config);
   }
 
   // Create

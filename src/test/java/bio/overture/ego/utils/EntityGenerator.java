@@ -29,6 +29,7 @@ import java.util.UUID;
 
 import static bio.overture.ego.utils.CollectionUtils.listOf;
 import static bio.overture.ego.utils.CollectionUtils.mapToList;
+import static bio.overture.ego.utils.Collectors.toImmutableSet;
 
 @Component
 /**
@@ -236,4 +237,22 @@ public class EntityGenerator {
   public Set<Scope> getScopes(String... scope) {
     return tokenService.getScopes(ImmutableSet.copyOf(scopeNames(scope)));
   }
+
+  private static UUID generateRandomIdNotIn(Set<String> existingIds){
+    UUID id = UUID.randomUUID();
+    while(existingIds.contains(id.toString())){
+      id = UUID.randomUUID();
+    }
+    return id;
+  }
+
+  public static UUID generateRandomUUIDNotIn(Set<UUID> existingUUIDs){
+    return generateRandomIdNotIn(existingUUIDs.stream().map(UUID::toString).collect(toImmutableSet()));
+  }
+
+  public static String generateRandomNameNotIn(Set<String> existingNames){
+    return generateRandomIdNotIn(existingNames).toString();
+  }
+
+
 }

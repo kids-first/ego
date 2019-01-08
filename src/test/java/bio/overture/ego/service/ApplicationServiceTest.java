@@ -1,20 +1,14 @@
 package bio.overture.ego.service;
 
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-
 import bio.overture.ego.controller.resolver.PageableResolver;
 import bio.overture.ego.model.entity.Application;
 import bio.overture.ego.model.search.SearchFilter;
 import bio.overture.ego.token.app.AppTokenClaims;
 import bio.overture.ego.utils.EntityGenerator;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.UUID;
-import javax.persistence.EntityNotFoundException;
+import com.google.common.collect.ImmutableSet;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,20 +23,54 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityNotFoundException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.UUID;
+
+import static bio.overture.ego.utils.Collectors.toImmutableSet;
+import static bio.overture.ego.utils.EntityGenerator.generateRandomNameNotIn;
+import static bio.overture.ego.utils.EntityGenerator.generateRandomUUIDNotIn;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+
 @Slf4j
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
 @Transactional
-public class ApplicationServiceTest {
+public class ApplicationServiceTest extends AbstractNamedServiceTest<Application, UUID, ApplicationService> {
+
+
+  private static final String APP1 = "Base ApplicationOne";
+  private static final String APP2 = "Base ApplicationTwo";
+  private static final String APP3 = "Base ApplicationThree";
+  private static final Set<String> APPS = ImmutableSet.of(APP1, APP2, APP3);
 
   @Autowired private ApplicationService applicationService;
-
   @Autowired private UserService userService;
-
   @Autowired private GroupService groupService;
-
   @Autowired private EntityGenerator entityGenerator;
+
+  @Before
+  public void beforeTest(){
+    val existingUsers = APPS.stream().map(entityGenerator::setupApplication).collect(toImmutableSet());
+    val existingIds = existingUsers.stream().map(Application::getId).collect(toImmutableSet());
+    val existingNames = existingUsers.stream().map(Application::getName).collect(toImmutableSet());
+    val nonExistingId = generateRandomUUIDNotIn(existingIds);
+    val nonExistingName = generateRandomNameNotIn(existingNames);
+    val config = ServiceTestConfig.<Application,UUID, ApplicationService>builder()
+        .entityType(Application.class)
+        .existingEntities(existingUsers)
+        .existingNames(existingNames)
+        .nonExistingName(nonExistingName)
+        .nonExistingId(nonExistingId)
+        .service(applicationService)
+        .build();
+    this.setConfig(config);
+  }
 
   // Create
   @Test
