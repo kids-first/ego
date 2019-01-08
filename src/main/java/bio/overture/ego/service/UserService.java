@@ -47,21 +47,25 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
 import static bio.overture.ego.utils.Collectors.toImmutableSet;
+import static bio.overture.ego.utils.Converters.convertToUUIDList;
 import static bio.overture.ego.utils.Converters.convertToUUIDSet;
 import static bio.overture.ego.utils.Joiners.COMMA;
 import static java.lang.String.format;
 import static java.util.UUID.fromString;
 import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.summarizingDouble;
 import static org.springframework.data.jpa.domain.Specifications.where;
 
 @Slf4j
 @Service
 @Transactional
-public class UserService extends AbstractNamedService<User> {
+public class UserService extends AbstractNamedServiceDecorator<User,UUID> {
 
   // DEMO USER
   private static final String DEMO_USER_NAME = "Demo.User@example.com";
@@ -79,20 +83,23 @@ public class UserService extends AbstractNamedService<User> {
   private final PolicyService policyService;
   private final UserPermissionService userPermissionService;
   private final UserRepository userRepository;
+  private final NamedService<User,UUID> internalService;
 
   @Autowired
   public UserService(
+      @NonNull NamedService<User, UUID> userNamedService,
       @NonNull UserRepository userRepository,
       @NonNull GroupService groupService,
       @NonNull ApplicationService applicationService,
       @NonNull PolicyService policyService,
       @NonNull UserPermissionService userPermissionService) {
-    super(User.class, userRepository);
+    super(userNamedService);
     this.userRepository = userRepository;
     this.groupService = groupService;
     this.applicationService = applicationService;
     this.policyService = policyService;
     this.userPermissionService = userPermissionService;
+    this.internalService = userNamedService;
   }
 
   /*
@@ -112,7 +119,7 @@ public class UserService extends AbstractNamedService<User> {
     // Set UserName to equal the email.
     userInfo.setName(userInfo.getEmail());
 
-    return getRepository().save(userInfo);
+    return userRepository.save(userInfo);
   }
 
   public User createFromIDToken(IDToken idToken) {
@@ -137,7 +144,7 @@ public class UserService extends AbstractNamedService<User> {
             u -> {
               u.setStatus(DEMO_USER_STATUS);
               u.setRole(DEMO_USER_ROLE);
-              return getRepository().save(u);
+              return userRepository.save(u);
             })
         .orElseGet(
             () ->
@@ -155,59 +162,59 @@ public class UserService extends AbstractNamedService<User> {
   }
 
   public User addUserToGroups(@NonNull String userId, @NonNull List<String> groupIDs) {
-    val user = getById(userId);
-    val groups = groupService.getMany(groupIDs);
+    val user = getById(fromString(userId));
+    val groups = groupService.getMany(convertToUUIDList(groupIDs));
     groups.forEach(user::associateWithGroup);
     // TODO: @rtisma test setting groups even if there were existing groups before does not delete
     // the existing ones. Becuase the PERSIST and MERGE cascade type is used, this should work
     // correctly
-    return getRepository().save(user);
+    return userRepository.save(user);
   }
 
   public User addUserToApps(@NonNull String userId, @NonNull List<String> appIDs) {
-    val user = getById(userId);
-    val apps = applicationService.getMany(appIDs);
+    val user = getById(fromString(userId));
+    val apps = applicationService.getMany(convertToUUIDList(appIDs));
     apps.forEach(user::associateWithApplication);
     // TODO: @rtisma test setting apps even if there were existing apps before does not delete the
     // existing ones. Becuase the PERSIST and MERGE cascade type is used, this should work correctly
-    return getRepository().save(user);
+    return userRepository.save(user);
   }
 
   public User addUserPermissions(
       @NonNull String userId, @NonNull List<PolicyIdStringWithAccessLevel> permissions) {
     val policyMap =
-        permissions.stream().collect(groupingBy(PolicyIdStringWithAccessLevel::getPolicyId));
-    val user = getById(userId);
+        permissions.stream().collect(groupingBy(x -> fromString(x.getPolicyId())));
+    val user = getById(fromString(userId));
     policyService
         .getMany(ImmutableList.copyOf(policyMap.keySet()))
         .stream()
         .flatMap(p -> streamUserPermission(user, policyMap, p))
         .map(userPermissionService::create)
         .forEach(user::associateWithPermission);
-    return getRepository().save(user);
+    return userRepository.save(user);
   }
 
   public User get(@NonNull String userId) {
-    return getById(userId);
+    return getById(fromString(userId));
   }
 
   public User update(@NonNull User updatedUserInfo) {
-    val user = getById(updatedUserInfo.getId().toString());
+    val user = getById(updatedUserInfo.getId());
     if (UserRole.USER.toString().equals(updatedUserInfo.getRole().toUpperCase()))
       updatedUserInfo.setRole(UserRole.USER.toString());
     else if (UserRole.ADMIN.toString().equals(updatedUserInfo.getRole().toUpperCase()))
       updatedUserInfo.setRole(UserRole.ADMIN.toString());
     user.update(updatedUserInfo);
-    return getRepository().save(user);
+    return userRepository.save(user);
   }
 
   public Page<User> listUsers(@NonNull List<SearchFilter> filters, @NonNull Pageable pageable) {
-    return getRepository().findAll(UserSpecification.filterBy(filters), pageable);
+    return userRepository.findAll(UserSpecification.filterBy(filters), pageable);
   }
 
   public Page<User> findUsers(
       @NonNull String query, @NonNull List<SearchFilter> filters, @NonNull Pageable pageable) {
-    return getRepository()
+    return userRepository
         .findAll(
             where(UserSpecification.containsText(query)).and(UserSpecification.filterBy(filters)),
             pageable);
@@ -215,11 +222,11 @@ public class UserService extends AbstractNamedService<User> {
 
   // TODO @rtisma: add test for checking group exists for user
   public void deleteUserFromGroups(@NonNull String userId, @NonNull Collection<String> groupIds) {
-    val user = getById(userId);
+    val user = getById(fromString(userId));
     val groupUUIDs = convertToUUIDSet(groupIds);
     checkGroupsExistForUser(user, groupUUIDs);
     user.getGroups().removeIf(x -> groupUUIDs.contains(x.getId()));
-    getRepository().save(user);
+    userRepository.save(user);
   }
 
   // TODO @rtisma: add test for all entities to ensure they implement .equals() using only the id
@@ -227,26 +234,26 @@ public class UserService extends AbstractNamedService<User> {
   // TODO @rtisma: add test for checking user exists
   // TODO @rtisma: add test for checking application exists for a user
   public void deleteUserFromApps(@NonNull String userId, @NonNull Collection<String> appIDs) {
-    val user = getById(userId);
+    val user = getById(fromString(userId));
     val appUUIDs = convertToUUIDSet(appIDs);
     checkApplicationsExistForUser(user, appUUIDs);
     user.getApplications().removeIf(x -> appUUIDs.contains(x.getId()));
-    getRepository().save(user);
+    userRepository.save(user);
   }
 
   // TODO @rtisma: add test for checking user permission exists for user
   public void deleteUserPermissions(
       @NonNull String userId, @NonNull Collection<String> permissionsIds) {
-    val user = getById(userId);
+    val user = getById(fromString(userId));
     val permUUIDs = convertToUUIDSet(permissionsIds);
     checkPermissionsExistForUser(user, permUUIDs);
     user.getUserPermissions().removeIf(x -> permUUIDs.contains(x.getId()));
-    getRepository().save(user);
+    userRepository.save(user);
   }
 
   public Page<User> findGroupUsers(
       @NonNull String groupId, @NonNull List<SearchFilter> filters, @NonNull Pageable pageable) {
-    return getRepository()
+    return userRepository
         .findAll(
             where(UserSpecification.inGroup(fromString(groupId)))
                 .and(UserSpecification.filterBy(filters)),
@@ -258,7 +265,7 @@ public class UserService extends AbstractNamedService<User> {
       @NonNull String query,
       @NonNull List<SearchFilter> filters,
       @NonNull Pageable pageable) {
-    return getRepository()
+    return userRepository
         .findAll(
             where(UserSpecification.inGroup(fromString(groupId)))
                 .and(UserSpecification.containsText(query))
@@ -268,7 +275,7 @@ public class UserService extends AbstractNamedService<User> {
 
   public Page<User> findAppUsers(
       @NonNull String appId, @NonNull List<SearchFilter> filters, @NonNull Pageable pageable) {
-    return getRepository()
+    return userRepository
         .findAll(
             where(UserSpecification.ofApplication(fromString(appId)))
                 .and(UserSpecification.filterBy(filters)),
@@ -280,7 +287,7 @@ public class UserService extends AbstractNamedService<User> {
       @NonNull String query,
       @NonNull List<SearchFilter> filters,
       @NonNull Pageable pageable) {
-    return getRepository()
+    return userRepository
         .findAll(
             where(UserSpecification.ofApplication(fromString(appId)))
                 .and(UserSpecification.containsText(query))
@@ -288,9 +295,11 @@ public class UserService extends AbstractNamedService<User> {
             pageable);
   }
 
+
+
   public Page<UserPermission> getUserPermissions(
       @NonNull String userId, @NonNull Pageable pageable) {
-    val userPermissions = ImmutableList.copyOf(getById(userId).getUserPermissions());
+    val userPermissions = ImmutableList.copyOf(getById(fromString(userId)).getUserPermissions());
     return new PageImpl<>(userPermissions, pageable, userPermissions.size());
   }
 
@@ -345,4 +354,5 @@ public class UserService extends AbstractNamedService<User> {
         .map(AccessLevel::fromValue)
         .map(a -> UserPermission.builder().accessLevel(a).policy(p).owner(u).build());
   }
+
 }

@@ -17,7 +17,7 @@ import java.util.List;
 @Slf4j
 @Service
 @Transactional
-public class PolicyService extends AbstractNamedService<Policy> {
+public class PolicyService extends NamedServiceImpl<Policy> {
 
   private final PolicyRepository policyRepository;
 

@@ -40,7 +40,7 @@ import static java.util.UUID.fromString;
 import static org.springframework.data.jpa.domain.Specifications.where;
 
 @Service
-public class GroupService extends AbstractNamedService<Group> {
+public class GroupService extends NamedServiceImpl<Group> {
 
   private final GroupRepository groupRepository;
   private final ApplicationService applicationService;

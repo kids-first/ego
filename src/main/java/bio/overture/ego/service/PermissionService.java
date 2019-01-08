@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Slf4j
 @Transactional
-public abstract class PermissionService<T extends Permission> extends AbstractBaseService<T> {
+public abstract class PermissionService<T extends Permission> extends BaseServiceImpl<T> {
 
   public PermissionService(Class<T> entityType, BaseRepository<T, UUID> repository) {
     super(entityType, repository);

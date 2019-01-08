@@ -50,7 +50,7 @@ import static org.springframework.data.jpa.domain.Specifications.where;
 
 @Service
 @Slf4j
-public class ApplicationService extends AbstractNamedService<Application>
+public class ApplicationService extends NamedServiceImpl<Application>
     implements ClientDetailsService {
 
   public final String APP_TOKEN_PREFIX = "Basic ";
