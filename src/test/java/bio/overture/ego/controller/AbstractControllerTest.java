@@ -1,5 +1,6 @@
 package bio.overture.ego.controller;
 
+import bio.overture.ego.model.dto.CreateApplicationRequest;
 import bio.overture.ego.model.dto.GroupRequest;
 import bio.overture.ego.model.dto.MaskDTO;
 import bio.overture.ego.model.entity.Application;
@@ -135,6 +136,10 @@ public abstract class AbstractControllerTest {
     return initStringRequest()
         .endpoint("/groups/%s/users/%s", g.getId(), COMMA.join(userIds))
         .deleteAnd();
+  }
+
+  protected ResponseOption<String> createApplicationPostRequestAnd(CreateApplicationRequest r) {
+    return initStringRequest().endpoint("/applications").body(r).postAnd();
   }
 
   protected ResponseOption<String> getGroupPermissionsForGroupGetRequestAnd(Group g) {

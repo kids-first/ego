@@ -1,23 +1,7 @@
 package bio.overture.ego.utils;
 
-import static bio.overture.ego.utils.Collectors.toImmutableSet;
-import static bio.overture.ego.utils.Joiners.AMPERSAND;
-import static bio.overture.ego.utils.Joiners.PATH;
-import static bio.overture.ego.utils.QueryParam.createQueryParam;
-import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
-import static com.google.common.collect.Sets.newHashSet;
-import static java.lang.String.format;
-import static java.util.Objects.isNull;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CONFLICT;
-import static org.springframework.http.HttpStatus.NOT_FOUND;
-import static org.springframework.http.HttpStatus.OK;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -30,6 +14,28 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+
+import static bio.overture.ego.controller.AbstractControllerTest.MAPPER;
+import static bio.overture.ego.utils.Collectors.toImmutableList;
+import static bio.overture.ego.utils.Collectors.toImmutableSet;
+import static bio.overture.ego.utils.Joiners.AMPERSAND;
+import static bio.overture.ego.utils.Joiners.PATH;
+import static bio.overture.ego.utils.QueryParam.createQueryParam;
+import static bio.overture.ego.utils.Streams.stream;
+import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
+import static com.google.common.collect.Sets.newHashSet;
+import static java.lang.String.format;
+import static java.util.Objects.isNull;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+import static org.springframework.http.HttpStatus.OK;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -178,8 +184,11 @@ public class WebResource<T> {
     }
   }
 
-  @Value
+
+  @RequiredArgsConstructor
   public static class ResponseOption<T> {
+
+    @Getter
     @NonNull private final ResponseEntity<T> response;
 
     public ResponseOption<T> assertStatusCode(HttpStatus code) {
@@ -215,5 +224,37 @@ public class WebResource<T> {
     public <R> R map(Function<ResponseEntity<T>, R> transformingFunction) {
       return transformingFunction.apply(getResponse());
     }
+
+
+    @SneakyThrows
+    private static <T> List<T> extractPageResultSetFromResponse(ResponseEntity<String> r, Class<T> tClass) {
+      assertThat(r.getStatusCode()).isEqualTo(OK);
+      assertThat(r.getBody()).isNotNull();
+      val page = MAPPER.readTree(r.getBody());
+      assertThat(page).isNotNull();
+      return stream(page.path("resultSet").iterator())
+          .map(x -> MAPPER.convertValue(x, tClass))
+          .collect(toImmutableList());
+    }
+
+    @SneakyThrows
+    private static <T> T extractOneEntityFromResponse(ResponseEntity<String> r, Class<T> tClass) {
+      assertThat(r.getStatusCode()).isEqualTo(OK);
+      assertThat(r.getBody()).isNotNull();
+      return MAPPER.readValue(r.getBody(), tClass);
+    }
+
+    @SneakyThrows
+    private static <T> Set<T> extractManyEntitiesFromResponse(ResponseEntity<String> r, Class<T> tClass) {
+      assertThat(r.getStatusCode()).isEqualTo(OK);
+      assertThat(r.getBody()).isNotNull();
+      return stream(MAPPER.readTree(r.getBody()).iterator())
+          .map(x -> MAPPER.convertValue(x, tClass))
+          .collect(toImmutableSet());
+    }
+  }
+
+  public static class StringResponseOption extends ResponseOption<String>{
+
   }
 }
