@@ -442,77 +442,60 @@ public class GroupControllerTest extends AbstractControllerTest {
   public void getGroups_FindAllQuery_Success() {
     val expectedGroups = repeatedCallsOf(() -> entityGenerator.generateRandomGroup(), 4);
     val numGroups = groupService.getRepository().count();
-    val actualGroups =
-        initStringRequest()
-            .endpoint("/groups")
-            .queryParam("limit", numGroups)
-            .queryParam("offset", 0)
-            .getAnd()
-            .assertOk()
-            .assertHasBody()
-            .map(x -> StringResponseOption.extractPageResultSetFromResponse(x, Group.class));
-    assertThat(actualGroups).containsAll(expectedGroups);
+    listGroupsEndpointAnd()
+        .queryParam("limit", numGroups)
+        .queryParam("offset", 0)
+        .getAnd()
+        .assertPageResultsOfType(Group.class)
+        .containsAll(expectedGroups);
   }
 
   @Test
   public void getGroups_FindSomeQuery_Success() {
-    val g1 =
-        StringResponseOption.extractOneEntityFromResponse(
-            createGroupPostRequest(
+    val g1 = createGroupPostRequestAnd(
                 GroupRequest.builder()
                     .name("abc11")
                     .status(APPROVED)
                     .description("blueberry banana")
-                    .build()),
-            Group.class);
+                    .build())
+            .extractOneEntity(Group.class);
 
-    val g2 =
-        StringResponseOption.extractOneEntityFromResponse(
-            createGroupPostRequest(
+    val g2 = createGroupPostRequestAnd(
                 GroupRequest.builder()
                     .name("abc21")
                     .status(APPROVED)
                     .description("blueberry orange")
-                    .build()),
-            Group.class);
+                    .build())
+                .extractOneEntity(Group.class);
 
-    val g3 =
-        StringResponseOption.extractOneEntityFromResponse(
-            createGroupPostRequest(
+
+    val g3 = createGroupPostRequestAnd(
                 GroupRequest.builder()
                     .name("abc22")
                     .status(REJECTED)
                     .description("orange banana")
-                    .build()),
-            Group.class);
+                    .build())
+                .extractOneEntity( Group.class);
 
     val numGroups = groupPermissionRepository.count();
 
-    val r1 =
-        initStringRequest()
-            .endpoint("/groups")
+    listGroupsEndpointAnd()
             .queryParam("query", "abc")
             .queryParam("offset", 0)
             .queryParam("length", numGroups)
-            .logging()
             .getAnd()
-            .assertOk()
-            .assertHasBody()
-            .map(x -> StringResponseOption.extractPageResultSetFromResponse(x, Group.class));
-    assertThat(r1).containsExactlyInAnyOrder(g1, g2, g3);
+            .assertPageResultsOfType(Group.class)
+            .containsExactlyInAnyOrder(g1, g2, g3);
 
-    val r2 =
-        initStringRequest()
-            .endpoint("/groups")
-            .queryParam("query", "abc2")
-            .queryParam("offset", 0)
-            .queryParam("length", numGroups)
-            .getAnd()
-            .assertOk()
-            .assertHasBody()
-            .map(x -> StringResponseOption.extractPageResultSetFromResponse(x, Group.class));
-    assertThat(r2).containsExactlyInAnyOrder(g3, g2);
+    listGroupsEndpointAnd()
+        .queryParam("query", "abc2")
+        .queryParam("offset", 0)
+        .queryParam("length", numGroups)
+        .getAnd()
+        .assertPageResultsOfType(Group.class)
+        .containsExactlyInAnyOrder(g3, g2);
 
+    sdfsdfsdfsf
     val r3 =
         initStringRequest()
             .endpoint("/groups")
