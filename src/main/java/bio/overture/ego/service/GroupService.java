@@ -41,6 +41,7 @@ import bio.overture.ego.model.entity.Application;
 import bio.overture.ego.model.entity.Group;
 import bio.overture.ego.model.entity.User;
 import bio.overture.ego.model.exceptions.NotFoundException;
+import bio.overture.ego.model.join.GroupApplication;
 import bio.overture.ego.model.join.UserGroup;
 import bio.overture.ego.model.search.SearchFilter;
 import bio.overture.ego.repository.GroupRepository;
@@ -132,6 +133,10 @@ public class GroupService extends AbstractNamedService<Group, UUID> {
 
   private Group getWithUserGroups(@NonNull UUID id) {
     return get(id, false, true, false);
+  }
+
+  private Group getWithApplications(@NonNull UUID id) {
+    return get(id, true, false, false);
   }
 
   public void disassociateUsersFromGroup(@NonNull UUID id, @NonNull Collection<UUID> userIds) {
@@ -235,6 +240,39 @@ public class GroupService extends AbstractNamedService<Group, UUID> {
         pageable);
   }
 
+  public void disassociateApplicationsFromGroup(@NonNull UUID id, @NonNull Collection<UUID> applicationIds) {
+    // check duplicate applicationIds
+    checkDuplicates(Application.class, applicationIds);
+
+    // Get existing associated child ids with the parent
+    val groupWithApplications = getWithApplications(id);
+    val applications = mapToImmutableSet(groupWithApplications.getGroupApplications(), GroupApplication::getApplication);
+    val existingAssociatedApplicationIds = convertToIds(applications);
+
+    // Get existing and non-existing non-associated application ids. Error out if there are existing and
+    // non-existing non-associated application ids
+    val nonAssociatedApplicationIds = difference(applicationIds, existingAssociatedApplicationIds);
+    if (!nonAssociatedApplicationIds.isEmpty()) {
+      applicationService.checkExistence(nonAssociatedApplicationIds);
+      throw buildNotFoundException(
+          "The following existing %s ids cannot be disassociated from %s '%s' "
+              + "because they are not associated with it",
+          Application.class.getSimpleName(), getEntityTypeName(), id);
+    }
+
+    // Since all applicaiton ids exist and are associated with the group, disassociate them from
+    // eachother
+    val applicationIdsToDisassociate = ImmutableSet.copyOf(applicationIds);
+    val groupApplicationsToDisassociate =
+        groupWithApplications.getGroupApplications().stream()
+            .filter(ga -> applicationIdsToDisassociate.contains(ga.getId().getApplicationId()))
+            .collect(toImmutableSet());
+
+    sdfsdfsdfsdf
+    disassociateUserGroupsFromGroup(groupWithApplications, groupApplicationsToDisassociate);
+    tokenEventsPublisher.requestTokenCleanupByUsers(applications);
+  }
+
   public Group addAppsToGroup(@NonNull UUID id, @NonNull List<UUID> appIds) {
     val group = getById(id);
     val apps = applicationService.getMany(appIds);
@@ -245,8 +283,8 @@ public class GroupService extends AbstractNamedService<Group, UUID> {
   public void deleteAppsFromGroup(@NonNull UUID id, @NonNull List<UUID> appIds) {
     val group = getById(id);
     checkAppsExistForGroup(group, appIds);
-    val appsToDisassociate =
-        group.getApplications().stream()
+    val appsToDisassociate = group.getGroupApplications().stream()
+            .map(GroupApplication::getApplication)
             .filter(a -> appIds.contains(a.getId()))
             .collect(toImmutableSet());
     disassociateApplicationsFromGroup(group, appsToDisassociate);
