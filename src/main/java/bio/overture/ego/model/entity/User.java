@@ -28,6 +28,7 @@ import bio.overture.ego.model.enums.SqlFields;
 import bio.overture.ego.model.enums.StatusType;
 import bio.overture.ego.model.enums.Tables;
 import bio.overture.ego.model.enums.UserType;
+import bio.overture.ego.model.join.UserApplication;
 import bio.overture.ego.model.join.UserGroup;
 import bio.overture.ego.view.Views;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -179,6 +180,15 @@ public class User implements PolicyOwner, NameableEntity<UUID> {
       fetch = FetchType.LAZY,
       orphanRemoval = true)
   private Set<UserGroup> userGroups = newHashSet();
+
+  @JsonIgnore
+  @Builder.Default
+  @OneToMany(
+      mappedBy = JavaFields.USER,
+      cascade = CascadeType.ALL,
+      fetch = FetchType.LAZY,
+      orphanRemoval = true)
+  private Set<UserApplication> userApplications = newHashSet();
 
   @JsonIgnore
   @ManyToMany(
