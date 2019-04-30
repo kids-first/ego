@@ -1,4 +1,4 @@
-<h1 align="center"> EGO (CR Ste-Justine) </h1><br>
+<h1 align="center"> EGO (CR Ste-Justine fork) </h1><br>
 
 <p align="center">
   A scalable stateless Authorization Service for Federated Identities including Google and Facebook
