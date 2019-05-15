@@ -22,7 +22,7 @@ ADD . .
 RUN mkdir -p /srv/ego/install \
     && mkdir -p /srv/ego/exec \
     && mvn package -Dmaven.test.skip=true \
-    && mv /usr/src/app/target/ego-*-SNAPSHOT-exec.jar /srv/ego/install/ego.jar \
+    && mv /usr/src/app/target/ego-*-exec.jar /srv/ego/install/ego.jar \
     && mv /usr/src/app/src/main/resources/scripts/run.sh /srv/ego/exec/run.sh
 
 # setup required environment variables
