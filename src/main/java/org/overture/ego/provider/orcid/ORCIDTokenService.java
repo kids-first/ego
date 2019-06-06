@@ -40,6 +40,8 @@ public class ORCIDTokenService {
     private int readTimeout;
     @Value("${orcid.client.userInfoUri}")
     private String userInfoUri;
+    @Value("${orcid.client.redirectUri}")
+    private String redirectUri;
 
     private RestTemplate orcidConnector;
     private AbstractXPathTemplate xpathTemplate;
@@ -106,7 +108,7 @@ public class ORCIDTokenService {
         body.add("client_secret", clientSecret);
         body.add("grant_type", "authorization_code");
         body.add("code", code);
-        body.add("redirect_uri", "https://portal.kidsfirst.org");
+        body.add("redirect_uri", redirectUri);
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
 
         return Objects.requireNonNull(orcidConnector.exchange(accessTokenUri, HttpMethod.POST, entity, JsonNode.class)

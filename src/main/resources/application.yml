@@ -49,10 +49,12 @@ google:
 # ORCID Connection Details
 orcid:
   client:
-    id: APP-1234567890
-    secret: 5f63d1c5-3f00-4fa5-b096-fd985ffd0df7
-    accessTokenUri: http://orcid.org/oauth/token
-    userInfoUri: http://orcid.org/v2.1/_ID_/person
+    id: APP-1234
+    secret: secret
+    baseUri: sandbox.orcid.org
+    accessTokenUri: https://${orcid.client.baseUri}/oauth/token
+    userInfoUri: https://api.${orcid.client.baseUri}/v2.1/_ID_/person
+    redirectUri: http://localhost:8888/orcid
     timeout:
       connect: 5000
       read: 5000
