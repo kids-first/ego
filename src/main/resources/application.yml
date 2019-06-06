@@ -52,9 +52,9 @@ orcid:
     id: APP-1234
     secret: secret
     baseUri: sandbox.orcid.org
+    redirectUri: http://localhost:8888/orcid
     accessTokenUri: https://${orcid.client.baseUri}/oauth/token
     userInfoUri: https://api.${orcid.client.baseUri}/v2.1/_ID_/person
-    redirectUri: http://localhost:8888/orcid
     timeout:
       connect: 5000
       read: 5000
