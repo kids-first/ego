@@ -46,6 +46,19 @@ google:
   client:
     Ids: 144611473365-k1aarg8qs6rlh67r3t7dssi1e34b6061.apps.googleusercontent.com
 
+# ORCID Connection Details
+orcid:
+  client:
+    id: APP-1234
+    secret: secret
+    baseUri: sandbox.orcid.org
+    redirectUri: http://localhost:8888/orcid
+    accessTokenUri: https://${orcid.client.baseUri}/oauth/token
+    userInfoUri: https://api.${orcid.client.baseUri}/v2.1/_ID_/person
+    timeout:
+      connect: 5000
+      read: 5000
+
 # Logging settings.
 logging:
   console:
@@ -127,3 +140,10 @@ spring.datasource:
   max-active: 1000
   max-idle: 10
   min-idle: 1
+
+orcid:
+  client:
+    id: APP-1234567890
+    secret: 5f63d1c5-3f00-4fa5-b096-fd985ffd0df7
+    accessTokenUri: http://localhost:${wiremock.server.port}/oauth/token
+    userInfoUri: http://localhost:${wiremock.server.port}/v2.1/_ID_/person

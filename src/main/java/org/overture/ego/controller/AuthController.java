@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.overture.ego.provider.facebook.FacebookTokenService;
 import org.overture.ego.provider.google.GoogleTokenService;
+import org.overture.ego.provider.orcid.ORCIDTokenService;
 import org.overture.ego.token.TokenService;
 import org.overture.ego.token.signer.TokenSigner;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,72 +40,84 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/oauth")
 @AllArgsConstructor(onConstructor = @__({@Autowired}))
 public class AuthController {
-  private TokenService tokenService;
-  private GoogleTokenService googleTokenService;
-  private FacebookTokenService facebookTokenService;
-  private TokenSigner tokenSigner;
+    private TokenService tokenService;
+    private GoogleTokenService googleTokenService;
+    private FacebookTokenService facebookTokenService;
+    private ORCIDTokenService orcidTokenService;
+    private TokenSigner tokenSigner;
 
-  @RequestMapping(method = RequestMethod.GET, value = "/google/token")
-  @ResponseStatus(value = HttpStatus.OK)
-  @SneakyThrows
-  public @ResponseBody
-  String exchangeGoogleTokenForAuth(
-      @RequestHeader(value = "token", required = true) final String idToken) {
-    if (!googleTokenService.validToken(idToken))
-      throw new InvalidTokenException("Invalid user token:" + idToken);
-    val authInfo = googleTokenService.decode(idToken);
-    return tokenService.generateUserToken(authInfo);
-  }
-
-  @RequestMapping(method = RequestMethod.GET, value = "/facebook/token")
-  @ResponseStatus(value = HttpStatus.OK)
-  @SneakyThrows
-  public @ResponseBody
-  String exchangeFacebookTokenForAuth(
-          @RequestHeader(value = "token", required = true) final String idToken) {
-    if (!facebookTokenService.validToken(idToken))
-      throw new InvalidTokenException("Invalid user token:" + idToken);
-    val authInfo = facebookTokenService.getAuthInfo(idToken);
-    if(authInfo.isPresent()) {
-      return tokenService.generateUserToken(authInfo.get());
-    } else {
-      throw new InvalidTokenException("Unable to generate auth token for this user");
-    }
-  }
-
-  @RequestMapping(method = RequestMethod.GET, value = "/token/verify")
-  @ResponseStatus(value = HttpStatus.OK)
-  @SneakyThrows
-  public @ResponseBody
-  boolean verifyJWToken(
-      @RequestHeader(value = "token", required = true) final String token) {
-    if (StringUtils.isEmpty(token))  {
-      throw new InvalidTokenException("Token is empty");
+    @RequestMapping(method = RequestMethod.GET, value = "/google/token")
+    @ResponseStatus(value = HttpStatus.OK)
+    @SneakyThrows
+    public @ResponseBody
+    String exchangeGoogleTokenForAuth(
+            @RequestHeader(value = "token") final String idToken) {
+        if (!googleTokenService.validToken(idToken))
+            throw new InvalidTokenException("Invalid user token:" + idToken);
+        val authInfo = googleTokenService.decode(idToken);
+        return tokenService.generateUserToken(authInfo);
     }
 
-    if ( ! tokenService.validateToken(token) ) {
-      throw new InvalidTokenException("Token failed validation");
+    @RequestMapping(method = RequestMethod.GET, value = "/facebook/token")
+    @ResponseStatus(value = HttpStatus.OK)
+    @SneakyThrows
+    public @ResponseBody
+    String exchangeFacebookTokenForAuth(
+            @RequestHeader(value = "token") final String idToken) {
+        if (!facebookTokenService.validToken(idToken))
+            throw new InvalidTokenException("Invalid user token:" + idToken);
+        val authInfo = facebookTokenService.getAuthInfo(idToken);
+        if (authInfo.isPresent()) {
+            return tokenService.generateUserToken(authInfo.get());
+        } else {
+            throw new InvalidTokenException("Unable to generate auth token for this user");
+        }
     }
-    return true;
-  }
 
-  @RequestMapping(method = RequestMethod.GET, value = "/token/public_key")
-  @ResponseStatus(value = HttpStatus.OK)
-  public @ResponseBody
-  String getPublicKey() {
-    val pubKey = tokenSigner.getEncodedPublicKey();
-    if(pubKey.isPresent()){
-      return pubKey.get();
-    } else {
-      return "";
+    @RequestMapping(method = RequestMethod.GET, value = "/orcid/token")
+    @ResponseStatus(value = HttpStatus.OK)
+    @SneakyThrows
+    public @ResponseBody
+    ResponseEntity<String> exchangeORCIDTokenForAuth(
+            @RequestHeader(value = "code") final String code) {
+        val result = orcidTokenService.getAuthInfo(code);
+        if (result.isValid()) {
+            return new ResponseEntity<>(tokenService.generateUserToken(result.getToken()), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(result.getError(), new HttpHeaders(),
+                    HttpStatus.BAD_REQUEST);
+        }
     }
-  }
 
-  @ExceptionHandler({ InvalidTokenException.class })
-  public ResponseEntity<Object> handleInvalidTokenException(HttpServletRequest req, InvalidTokenException ex) {
-    log.error("ID Token not found.");
-    return new ResponseEntity<Object>("Invalid ID Token provided.", new HttpHeaders(),
-        HttpStatus.BAD_REQUEST);
-  }
+    @RequestMapping(method = RequestMethod.GET, value = "/token/verify")
+    @ResponseStatus(value = HttpStatus.OK)
+    @SneakyThrows
+    public @ResponseBody
+    boolean verifyJWToken(
+            @RequestHeader(value = "token") final String token) {
+        if (StringUtils.isEmpty(token)) {
+            throw new InvalidTokenException("Token is empty");
+        }
+
+        if (!tokenService.validateToken(token)) {
+            throw new InvalidTokenException("Token failed validation");
+        }
+        return true;
+    }
+
+    @RequestMapping(method = RequestMethod.GET, value = "/token/public_key")
+    @ResponseStatus(value = HttpStatus.OK)
+    public @ResponseBody
+    String getPublicKey() {
+        val pubKey = tokenSigner.getEncodedPublicKey();
+        return pubKey.orElse("");
+    }
+
+    @ExceptionHandler({InvalidTokenException.class})
+    public ResponseEntity<Object> handleInvalidTokenException(HttpServletRequest req, InvalidTokenException ex) {
+        log.error("ID Token not found.");
+        return new ResponseEntity<>("Invalid ID Token provided.", new HttpHeaders(),
+                HttpStatus.BAD_REQUEST);
+    }
 
 }

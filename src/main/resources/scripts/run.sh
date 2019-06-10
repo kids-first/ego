@@ -18,7 +18,11 @@ then
         --google.client.Ids="$EGO_SERVER_GOOGLE_CLIENT_IDS" \
         --facebook.client.id="$EGO_SERVER_FACEBOOK_APP_ID" \
         --facebook.client.secret="$EGO_SERVER_FACEBOOK_SECRET" \
-        --server.port=$EGO_SERVER_PORT
+        --server.port=$EGO_SERVER_PORT \
+        --orcid.client.secret="$EGO_SERVER_ORCID_SECRET" \
+        --orcid.client.id="$EGO_SERVER_ORCID_APP_ID" \
+        --orcid.client.baseUri="$EGO_SERVER_ORCID_BASE_URI" \
+        --orcid.client.redirectUri="$EGO_SERVER_ORCID_REDIRECT_URI"
 else
     if [ -z "$VAULT_TOKEN" ]
     then
@@ -32,7 +36,11 @@ else
             --spring.cloud.vault.scheme=$EGO_VAULT_SCHEME \
             --spring.cloud.vault.host=$EGO_VAULT_HOST \
             --spring.cloud.vault.port=$EGO_VAULT_PORT \
-            --spring.cloud.vault.aws-iam.role=$EGO_IAM_ROLE
+            --spring.cloud.vault.aws-iam.role=$EGO_IAM_ROLE \
+            --orcid.client.id="$EGO_SERVER_ORCID_APP_ID" \
+            --orcid.client.baseUri="$EGO_SERVER_ORCID_BASE_URI" \
+            --orcid.client.redirectUri="$EGO_SERVER_ORCID_REDIRECT_URI"
+
     else
         echo "Running with Vault token"
         java -jar $EGO_INSTALL_PATH/install/ego.jar \
@@ -44,6 +52,9 @@ else
             --spring.cloud.vault.scheme=$EGO_VAULT_SCHEME \
             --spring.cloud.vault.host=$EGO_VAULT_HOST \
             --spring.cloud.vault.port=$EGO_VAULT_PORT \
-            --spring.cloud.vault.token=$VAULT_TOKEN
+            --spring.cloud.vault.token=$VAULT_TOKEN \
+            --orcid.client.id="$EGO_SERVER_ORCID_APP_ID" \
+            --orcid.client.baseUri="$EGO_SERVER_ORCID_BASE_URI" \
+            --orcid.client.redirectUri="$EGO_SERVER_ORCID_REDIRECT_URI"
     fi
 fi
