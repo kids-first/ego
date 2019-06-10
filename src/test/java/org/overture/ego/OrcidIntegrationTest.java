@@ -31,7 +31,7 @@ public class OrcidIntegrationTest {
 
         stubFor(post(urlEqualTo("/oauth/token"))
                 .withHeader("Accept", equalTo("application/json"))
-                .withRequestBody(equalTo("client_id=APP-1234567890&client_secret=5f63d1c5-3f00-4fa5-b096-fd985ffd0df7&grant_type=authorization_code&code=123456&redirect_uri=https%3A%2F%2Fportal.kidsfirst.org"))
+                .withRequestBody(equalTo("client_id=APP-1234567890&client_secret=5f63d1c5-3f00-4fa5-b096-fd985ffd0df7&grant_type=authorization_code&code=123456&redirect_uri=http%3A%2F%2Flocalhost%3A8888%2Forcid"))
                 .willReturn(okJson(
                             "{" +
                                     "   \"access_token\":\"f5af9f51-07e6-4332-8f1a-c0c11c1e3728\",\"token_type\":\"bearer\",\n" +
@@ -63,7 +63,7 @@ public class OrcidIntegrationTest {
 
         stubFor(post(urlEqualTo("/oauth/token"))
                 .withHeader("Accept", equalTo("application/json"))
-                .withRequestBody(equalTo("client_id=APP-1234567890&client_secret=5f63d1c5-3f00-4fa5-b096-fd985ffd0df7&grant_type=authorization_code&code=123456&redirect_uri=https%3A%2F%2Fportal.kidsfirst.org"))
+                .withRequestBody(equalTo("client_id=APP-1234567890&client_secret=5f63d1c5-3f00-4fa5-b096-fd985ffd0df7&grant_type=authorization_code&code=123456&redirect_uri=http%3A%2F%2Flocalhost%3A8888%2Forcid"))
                 .willReturn(okJson(
                         "{" +
                                 "   \"access_token\":\"f5af9f51-07e6-4332-8f1a-c0c11c1e3728\",\"token_type\":\"bearer\",\n" +
@@ -94,7 +94,7 @@ public class OrcidIntegrationTest {
 
         stubFor(post(urlEqualTo("/oauth/token"))
                 .withHeader("Accept", equalTo("application/json"))
-                .withRequestBody(equalTo("client_id=APP-1234567890&client_secret=5f63d1c5-3f00-4fa5-b096-fd985ffd0df7&grant_type=authorization_code&code=123456&redirect_uri=https%3A%2F%2Fportal.kidsfirst.org"))
+                .withRequestBody(equalTo("client_id=APP-1234567890&client_secret=5f63d1c5-3f00-4fa5-b096-fd985ffd0df7&grant_type=authorization_code&code=123456&redirect_uri=http%3A%2F%2Flocalhost%3A8888%2Forcid"))
                 .willReturn(okJson(
                         "{" +
                                 "   \"access_token\":\"f5af9f51-07e6-4332-8f1a-c0c11c1e3728\",\"token_type\":\"bearer\",\n" +
