@@ -37,7 +37,6 @@ else
             --spring.cloud.vault.host=$EGO_VAULT_HOST \
             --spring.cloud.vault.port=$EGO_VAULT_PORT \
             --spring.cloud.vault.aws-iam.role=$EGO_IAM_ROLE \
-            --orcid.client.id="$EGO_SERVER_ORCID_APP_ID" \
             --orcid.client.baseUri="$EGO_SERVER_ORCID_BASE_URI" \
             --orcid.client.redirectUri="$EGO_SERVER_ORCID_REDIRECT_URI"
 
@@ -53,7 +52,6 @@ else
             --spring.cloud.vault.host=$EGO_VAULT_HOST \
             --spring.cloud.vault.port=$EGO_VAULT_PORT \
             --spring.cloud.vault.token=$VAULT_TOKEN \
-            --orcid.client.id="$EGO_SERVER_ORCID_APP_ID" \
             --orcid.client.baseUri="$EGO_SERVER_ORCID_BASE_URI" \
             --orcid.client.redirectUri="$EGO_SERVER_ORCID_REDIRECT_URI"
     fi
