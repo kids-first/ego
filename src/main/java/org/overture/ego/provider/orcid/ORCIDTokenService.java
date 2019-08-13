@@ -3,6 +3,8 @@ package org.overture.ego.provider.orcid;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.jetbrains.annotations.NotNull;
 import org.overture.ego.token.IDToken;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +19,9 @@ import org.springframework.xml.xpath.AbstractXPathTemplate;
 import org.springframework.xml.xpath.Jaxp13XPathTemplate;
 
 import javax.annotation.PostConstruct;
+import javax.net.ssl.SSLContext;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -116,10 +121,20 @@ public class ORCIDTokenService {
     }
 
     private HttpComponentsClientHttpRequestFactory httpRequestFactory() {
-        val factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setConnectTimeout(connectTimeout);
-        factory.setReadTimeout(readTimeout);
-        return factory;
+        try {
+            val factory = new HttpComponentsClientHttpRequestFactory();
+            //Enforce TLS v1.2 : https://stackoverflow.com/questions/52836065/i-o-error-on-post-request-for-java-net-socketexception-connection-reset/55333280#55333280
+            SSLContext context = SSLContext.getInstance("TLSv1.2");
+            context.init(null, null, null);
+            CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(context)
+                    .build();
+            factory.setConnectTimeout(connectTimeout);
+            factory.setReadTimeout(readTimeout);
+            factory.setHttpClient(httpClient);
+            return factory;
+        } catch (NoSuchAlgorithmException | KeyManagementException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
 }
