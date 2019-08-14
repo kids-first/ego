@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -127,6 +128,7 @@ public class ORCIDTokenService {
             SSLContext context = SSLContext.getInstance("TLSv1.2");
             context.init(null, null, null);
             CloseableHttpClient httpClient = HttpClientBuilder.create().setSSLContext(context)
+                    .evictIdleConnections(30, TimeUnit.SECONDS)
                     .build();
             factory.setConnectTimeout(connectTimeout);
             factory.setReadTimeout(readTimeout);
