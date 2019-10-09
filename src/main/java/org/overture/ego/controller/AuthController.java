@@ -23,9 +23,11 @@ import lombok.val;
 import org.overture.ego.provider.facebook.FacebookTokenService;
 import org.overture.ego.provider.google.GoogleTokenService;
 import org.overture.ego.provider.orcid.ORCIDTokenService;
+import org.overture.ego.token.IDToken;
 import org.overture.ego.token.TokenService;
 import org.overture.ego.token.signer.TokenSigner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -87,6 +89,18 @@ public class AuthController {
             return new ResponseEntity<>(result.getError(), new HttpHeaders(),
                     HttpStatus.BAD_REQUEST);
         }
+    }
+
+
+    @RequestMapping(method = RequestMethod.GET, value = "/dev/token")
+    @ResponseStatus(value = HttpStatus.OK)
+    @ConditionalOnExpression("${enable.dev.token}")
+    @SneakyThrows
+    public @ResponseBody
+    ResponseEntity<String> exchangeDevTokenForAuth(@RequestParam(value = "email") final String email,@RequestParam(value = "lastName") final String lastName,@RequestParam(value = "firstName") final String firstName) {
+        val token = new IDToken(email, firstName, lastName);
+        return new ResponseEntity<>(tokenService.generateUserToken(token), HttpStatus.OK);
+
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/token/verify")
