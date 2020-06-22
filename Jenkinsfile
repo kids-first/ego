@@ -7,6 +7,7 @@ ecs_service_type_1_standard {
     entrypoint_command = "java_standard" 
     deploy_scripts_version = "master"
     quick_deploy = "true"
+    external_config_repo = "false"
     container_port = "8081"
     vcpu_container             = "2048"
     memory_container           = "4096"
