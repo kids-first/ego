@@ -4,7 +4,7 @@ ecs_service_type_1_standard {
     organization = "kf-strides"
     environments = "dev,qa,prd"
     docker_image_type = "debian"
-    entrypoint_command = "java_standard" 
+    entrypoint_command = "/srv/ego/exec/run.sh" 
     deploy_scripts_version = "master"
     quick_deploy = "true"
     external_config_repo = "false"
