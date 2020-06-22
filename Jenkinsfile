@@ -6,7 +6,6 @@ ecs_service_type_1_standard {
     docker_image_type = "debian"
     entrypoint_command = "java_standard" 
     deploy_scripts_version = "master"
-    external_config_repo = "true"
     quick_deploy = "true"
     container_port = "8081"
     vcpu_container             = "2048"
