@@ -14,5 +14,5 @@ ecs_service_type_1_standard {
     vcpu_task                  = "2048"
     memory_task                = "4096"
     health_check_path = "/swagger-ui.html#"
-    dependencies = "postgres_rds"
+    dependencies = "ecr,postgres_rds"
 }
