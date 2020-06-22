@@ -3,6 +3,7 @@ ecs_service_type_1_standard {
     projectName = "kf-portal-ego"
     organization = "kf-strides"
     environments = "dev,qa,prd"
+    destroy_dev  = "true"
     docker_image_type = "debian"
     entrypoint_command = "/srv/ego/exec/run.sh" 
     deploy_scripts_version = "master"
