@@ -4,7 +4,7 @@ ecs_service_type_1_standard {
     organization = "kf-strides"
     environments = "dev,qa,prd"
     docker_image_type = "debian"
-    entrypoint_command = "java_standard" (or you can use any arbitrary commands like "npm start" or "yarn")
+    entrypoint_command = "java_standard" 
     deploy_scripts_version = "master"
     external_config_repo = "true"
     quick_deploy = "true"
