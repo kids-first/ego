@@ -1,5 +1,18 @@
 @Library(value="kids-first/aws-infra-jenkins-shared-libraries", changelog=false) _
-ecs_service_type_1 {
-    agentLabel = "terraform-testing"
+ecs_service_type_1_standard {
     projectName = "kf-portal-ego"
+    organization = "kf-strides"
+    environments = "dev,qa,prd"
+    docker_image_type = "debian"
+    entrypoint_command = "java_standard" (or you can use any arbitrary commands like "npm start" or "yarn")
+    deploy_scripts_version = "master"
+    external_config_repo = "true"
+    quick_deploy = "true"
+    container_port = "8081"
+    vcpu_container             = "2048"
+    memory_container           = "4096"
+    vcpu_task                  = "2048"
+    memory_task                = "4096"
+    health_check_path = "/swagger-ui.html#"
+    dependencies = "postgres_rds"
 }
