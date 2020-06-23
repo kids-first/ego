@@ -1,8 +1,8 @@
 @Library(value="kids-first/aws-infra-jenkins-shared-libraries", changelog=false) _
 ecs_service_type_1_standard {
     projectName = "kf-portal-ego"
-    organization = "kf-strides"
     environments = "dev,qa,prd"
+    ecs_service_type_1_version = "feature/migrate-to-standard-deploy"
     destroy_dev  = "true"
     docker_image_type = "debian"
     entrypoint_command = "/srv/ego/exec/run.sh" 
