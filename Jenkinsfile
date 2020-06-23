@@ -2,7 +2,6 @@
 ecs_service_type_1_standard {
     projectName = "kf-portal-ego"
     environments = "dev,qa,prd"
-    ecs_service_type_1_version = "feature/deploy_depenencies"
     destroy_dev  = "true"
     docker_image_type = "debian"
     entrypoint_command = "/srv/ego/exec/run.sh" 
