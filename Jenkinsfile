@@ -14,4 +14,5 @@ ecs_service_type_1_standard {
     memory_task                = "4096"
     health_check_path = "/oauth/token/public_key"
     dependencies = "ecr,postgres_rds"
+    friendly_dns_name = "ego"
 }
