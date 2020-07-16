@@ -6,6 +6,7 @@ ecs_service_type_1_standard {
     entrypoint_command = "/srv/ego/exec/run.sh" 
     deploy_scripts_version = "master"
     quick_deploy = "true"
+    internal_app = "false"
     external_config_repo = "false"
     container_port = "8081"
     vcpu_container             = "2048"
