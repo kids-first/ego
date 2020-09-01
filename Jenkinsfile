@@ -16,4 +16,5 @@ ecs_service_type_1_standard {
     health_check_path = "/oauth/token/public_key"
     dependencies = "ecr,postgres_rds"
     friendly_dns_name = "ego"
+    additional_ssl_cert_domain_name = "*.kidsfirstdrc.org"
 }
