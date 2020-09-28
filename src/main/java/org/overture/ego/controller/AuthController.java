@@ -91,18 +91,6 @@ public class AuthController {
         }
     }
 
-
-    @RequestMapping(method = RequestMethod.GET, value = "/dev/token")
-    @ResponseStatus(value = HttpStatus.OK)
-    @ConditionalOnExpression("${enable.dev.token}")
-    @SneakyThrows
-    public @ResponseBody
-    ResponseEntity<String> exchangeDevTokenForAuth(@RequestParam(value = "email") final String email,@RequestParam(value = "lastName") final String lastName,@RequestParam(value = "firstName") final String firstName) {
-        val token = new IDToken(email, firstName, lastName);
-        return new ResponseEntity<>(tokenService.generateUserToken(token), HttpStatus.OK);
-
-    }
-
     @RequestMapping(method = RequestMethod.GET, value = "/token/verify")
     @ResponseStatus(value = HttpStatus.OK)
     @SneakyThrows

@@ -45,10 +45,10 @@ public class DefaultTokenSigner implements TokenSigner {
   /*
     Dependencies
    */
-  @Value("${token.private-key}")
+  @Value("${token.privateKey}")
   private String encodedPrivKey;
 
-  @Value("${token.public-key}")
+  @Value("${token.publicKey}")
   private String encodedPubKey;
 
   /*
