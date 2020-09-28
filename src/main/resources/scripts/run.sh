@@ -25,7 +25,7 @@ then
         --orcid.client.redirectUri="$EGO_SERVER_ORCID_REDIRECT_URI" \
         --orcid.client.redirectUri="$EGO_SERVER_ORCID_REDIRECT_URI" \
         --token.privateKey="$EGO_SERVER_PRIVATE_KEY" \
-        --token.publicKey="$EGO_SERVER_PUBLIC_KEY"
+        --token.publicKey="$EGO_SERVER_PUBLIC_KEY" \
 
 else
     if [ -z "$VAULT_TOKEN" ]
