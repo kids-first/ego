@@ -25,8 +25,7 @@ then
         --orcid.client.redirectUri="$EGO_SERVER_ORCID_REDIRECT_URI" \
         --orcid.client.redirectUri="$EGO_SERVER_ORCID_REDIRECT_URI" \
         --token.privateKey="$EGO_SERVER_PRIVATE_KEY" \
-        --token.publicKey="$EGO_SERVER_PUBLIC_KEY" \
-
+        --token.publicKey="$EGO_SERVER_PUBLIC_KEY"
 else
     if [ -z "$VAULT_TOKEN" ]
     then
@@ -42,8 +41,7 @@ else
             --spring.cloud.vault.port=$EGO_VAULT_PORT \
             --spring.cloud.vault.aws-iam.role=$EGO_IAM_ROLE \
             --orcid.client.baseUri="$EGO_SERVER_ORCID_BASE_URI" \
-            --orcid.client.redirectUri="$EGO_SERVER_ORCID_REDIRECT_URI"\
-
+            --orcid.client.redirectUri="$EGO_SERVER_ORCID_REDIRECT_URI"
     else
         echo "Running with Vault token"
         java -jar $EGO_INSTALL_PATH/install/ego.jar \
@@ -57,6 +55,6 @@ else
             --spring.cloud.vault.port=$EGO_VAULT_PORT \
             --spring.cloud.vault.token=$VAULT_TOKEN \
             --orcid.client.baseUri="$EGO_SERVER_ORCID_BASE_URI" \
-            --orcid.client.redirectUri="$EGO_SERVER_ORCID_REDIRECT_URI"\
+            --orcid.client.redirectUri="$EGO_SERVER_ORCID_REDIRECT_URI"
     fi
 fi
