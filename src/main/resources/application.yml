@@ -68,7 +68,6 @@ logging:
     "org.skife.jdbi.v2": TRACE
   level:
     root: ERROR
-    org.springframework.web.filter.CommonsRequestLoggingFilter: DEBUG
     org.springframework.boot: INFO
     org.overture.ego: INFO
 

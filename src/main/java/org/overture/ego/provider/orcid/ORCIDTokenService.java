@@ -115,6 +115,7 @@ public class ORCIDTokenService {
         body.add("grant_type", "authorization_code");
         body.add("code", code);
         body.add("redirect_uri", redirectUri);
+        log.info("Exchange token POST {} with parameters code={}, redirect_uri={}", accessTokenUri, code, redirectUri);
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(body, headers);
 
         return Objects.requireNonNull(orcidConnector.exchange(accessTokenUri, HttpMethod.POST, entity, JsonNode.class)
