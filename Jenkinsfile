@@ -1,6 +1,7 @@
 @Library(value="kids-first/aws-infra-jenkins-shared-libraries@feature/add-public-ecr", changelog=false) _
 ecs_service_type_1_standard {
     deploy_scripts_version="feature/public-ecr"
+    publish_to_public_repo = "true"
     projectName = "kf-portal-ego"
     environments = "dev,qa,prd"
     docker_image_type = "debian"
