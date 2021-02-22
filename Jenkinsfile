@@ -1,5 +1,6 @@
 @Library(value="kids-first/aws-infra-jenkins-shared-libraries", changelog=false) _
 ecs_service_type_1_standard {
+    deploy_scripts_version="feature/public-ecr"
     projectName = "kf-portal-ego"
     environments = "dev,qa,prd"
     docker_image_type = "debian"
